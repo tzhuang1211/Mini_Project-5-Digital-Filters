@@ -4,7 +4,7 @@ import numpy as np
 def plot_impulse_response(filename, title):
     h = np.loadtxt(filename)
     plt.figure()
-    plt.stem(h, basefmt='b-', linefmt='', markerfmt='', use_line_collection=True)
+    plt.stem(h, basefmt='b-', linefmt='', markerfmt='')
     plt.title(title)
     plt.xlabel('Sample Index')
     plt.ylabel('Amplitude')
