@@ -154,7 +154,7 @@ void calculateLogSpectrumAndSave(float* log_spectrum, short* channel, size_t len
     // Assuming in is an array of complex numbers
     complex_t *in = (complex_t *)malloc((end - start) * sizeof(complex_t));
 
-    // copy input to DFT input
+    // copy input to DFT input (seperate right channel from left channel)
     for (int i = 0; i < (end - start); i++) {
         in[i] = (complex_t) {(double)(isBandPass ? p_wav->LChannel[start + i] : p_wav->RChannel[start + i]), 0.0};
     }
@@ -162,12 +162,12 @@ void calculateLogSpectrumAndSave(float* log_spectrum, short* channel, size_t len
     // use DFT
     dft(in, end - start);
 
-    // Assuming log_spectrum_file is defined somewhere in your code
+    // write data into log_spectrum_file
     FILE *log_spectrum_file = fopen(filename, "w");
     if (log_spectrum_file == NULL) {
         fprintf(stderr, "Error opening file: %s\n", filename);
         exit(1);
-    }
+    } // debug
 
     // calculate log spectrum
     for (int i = 0; i < (end - start); i++) {
@@ -177,7 +177,7 @@ void calculateLogSpectrumAndSave(float* log_spectrum, short* channel, size_t len
         // Use the frequency information adjusted for the window size and sampling rate
         double frequency = ((double)i / (end - start)) * FS;
 
-        fprintf(log_spectrum_file, "%.15e ", log_magnitude);
+        fprintf(log_spectrum_file, "%.15e ", log_magnitude); // write data in
     }
 
     fclose(log_spectrum_file);
@@ -225,7 +225,7 @@ int main(int argc, char **argv) {
     }
 
     int M = atoi(argv[1]);
-    char *fn_hL = argv[2];
+    char *fn_hL = argv[2]; // input arguments
     char *fn_hR = argv[3];
     char *fn_YL = argv[4];
     char *fn_YR = argv[5];
@@ -235,7 +235,7 @@ int main(int argc, char **argv) {
     if (M <= 0) {
         fprintf(stderr, "Invalid value for M\n");
         return 1;
-    }
+    } // debug
 
     // Allocate memory for filter coefficients
     float *h_L = (float *)calloc(2 * M + 1, sizeof(float));
@@ -275,8 +275,8 @@ int main(int argc, char **argv) {
     fclose(hR_file);
 
 
-    wav wavin;
-    wav wavout;
+    wav wavin; // populate structure for input.wav
+    wav wavout; // populate structure for output.wav
 
     // Read input wav file
     if (wav_read_fn(fn_in, &wavin) == 0) {
@@ -314,10 +314,11 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Cannot save %s\n", fn_out);
         return 1;
     }
+
     size_t start_time = 962880; // 20.060 seconds
     size_t end_time = 964080;   // 20.085 seconds
 
-    float *Y_L = (float *)malloc((end_time - start_time) * sizeof(float));
+    float *Y_L = (float *)malloc((end_time - start_time) * sizeof(float)); // allocate memory for Y_L 
     float *Y_R = (float *)malloc((end_time - start_time) * sizeof(float));
 
     if (Y_L == NULL || Y_R == NULL) {
@@ -326,10 +327,9 @@ int main(int argc, char **argv) {
     }
 
     // Compute and save log spectrum for the left channel
-    calculateLogSpectrumAndSave(Y_L, wavin.LChannel, wavin.length, start_time, end_time, h_L, fn_YL, &wavin, 1);
-
+    calculateLogSpectrumAndSave(Y_L, wavin.LChannel, wavin.length, start_time, end_time, h_L, fn_YL, &wavout, 1);
     // Compute and save log spectrum for the right channel
-    calculateLogSpectrumAndSave(Y_R, wavin.RChannel, wavin.length, start_time, end_time, h_R, fn_YR, &wavin, 0);
+    calculateLogSpectrumAndSave(Y_R, wavin.RChannel, wavin.length, start_time, end_time, h_R, fn_YR, &wavout, 0);
 
     // Free allocated memory
     wav_free(&wavin);
@@ -341,4 +341,3 @@ int main(int argc, char **argv) {
 
     return 0;
 }
-
