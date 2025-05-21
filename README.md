@@ -1,5 +1,4 @@
 # Mini_Project-5: Digital-Filters
-### 411086026 通訊三 黃廷哲
 ### 程式碼解釋:
 #### 引入函式庫
 ```js
